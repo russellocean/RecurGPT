@@ -49,21 +49,22 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 def add_task(task):
     task_list.append(task)
 
-def openai_call(prompt, temperature=0.5, max_tokens=100):
+def openai_call(prompt, role="user", temperature=0.5, max_tokens=100):
     logging.info(f"Sending prompt to OpenAI: {prompt}")
     confirm = input("Press 'y' to confirm OpenAI call or any other key to exit: ")
     if confirm.lower() != 'y':
         sys.exit("User exited the program.")
         
-    response = openai.Completion.create(
-        engine='text-davinci-002',
-        prompt=prompt,
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": role, "content": prompt},
+        ],
         temperature=temperature,
         max_tokens=max_tokens,
-        n=1,
-        stop=None,
     )
-    result = response.choices[0].text.strip()
+    result = response['choices'][0]['message']['content'].strip()
     logging.info(f"OpenAI response: {result}")
     return result
 
