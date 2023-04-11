@@ -1,5 +1,4 @@
 import os
-from langchain.llms import OpenAI
 
 # Load environment variables
 from dotenv import load_dotenv
