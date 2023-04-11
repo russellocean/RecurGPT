@@ -18,6 +18,19 @@ from langchain.docstore.document import Document
 from langchain import Wikipedia
 from langchain.agents.react.base import DocstoreExplorer
 from langchain.chat_models import ChatOpenAI
+from langchain.output_parsers import CommaSeparatedListOutputParser
+from langchain.output_parsers import OutputFixingParser
+from custom_parser import CustomOutputFixingParser
+
+
+
+from langchain.output_parsers import StructuredOutputParser, ResponseSchema
+
+
+from view_directory import view_directory
+
+import json
+
 
 # Load environment variables
 load_dotenv()
@@ -34,7 +47,10 @@ def main():
     
     # Split documents using TextSplitter
     #text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=3000, chunk_overlap=1000)
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size = 1000,
+        chunk_overlap  = 50,
+    )
     document_objs = [Document(page_content=text) for text in documents]
     texts = text_splitter.split_documents(document_objs)
     
@@ -49,9 +65,8 @@ def main():
     
     # Creating an instance of the FileViewer tool
     file_viewer = FileViewer()
-
-    #llm = OpenAI(model_name="text-davinci-003", streaming=True, callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]), verbose=True, temperature=0.5)
-    llm = ChatOpenAI(model='gpt-3.5-turbo',temperature=0.9, verbose=True)
+    
+    llm = ChatOpenAI(model='gpt-3.5-turbo',temperature=0.2, verbose=True)
     
     directory_reader = Tool(
         name="Local Directory Index",
@@ -64,15 +79,37 @@ def main():
         description="Useful for searching information based on similarity in the Chroma vector database."
     )
     
-    template = """{history}
-    Human: {human_input}
-    Assistant:"""
+
+    # How you would like your reponse structured. This is basically a fancy prompt template
+    response_schemas = [
+        ResponseSchema(name="final_answer", description="The final answer to the question.")
+    ]
+
+    # How you would like to parse your output
+    output_parser = CommaSeparatedListOutputParser()
+    format_instructions = output_parser.get_format_instructions()
+    
+    fix_parser = OutputFixingParser.from_llm(parser=output_parser, llm=ChatOpenAI())
+    
+    custom_parser = CustomOutputFixingParser(llm=llm)
+
+    
+    template = """
+    The users project folder is {project_folder}.
+    The user is asking: {human_input}
+    
+    {format_instructions}
+    
+    Just provide the answer to the question, dont worry about the formatting.
+    """
 
     prompt = PromptTemplate(
-        input_variables=["history", "human_input"], 
+        input_variables=["project_folder", "human_input"],
+        partial_variables={"format_instructions": format_instructions},
         template=template
     )
-
+    
+    promptValue = prompt.format(project_folder=config.project_folder, human_input="What files are in this project folder?")
     
    # Initialize the react-docstore agent
     docstore = DocstoreExplorer(Wikipedia())
@@ -88,9 +125,11 @@ def main():
             description="useful for when you need to ask with lookup"
         )
     ]
-    tools = load_tools(['human', 'wikipedia', 'requests_all'], llm=llm)
+    tools = load_tools(['wikipedia', 'requests_all'], llm=llm)
     
-    tools = tools + [file_viewer, directory_reader, chroma_tool] + react_tools
+    #tools = tools + [view_directory, file_viewer, chroma_tool] + react_tools
+    
+    tools = tools + [view_directory] + react_tools
     
     # memory = ConversationBufferMemory()
     # memory.load_memory_variables({})
@@ -98,9 +137,12 @@ def main():
     memory = ConversationBufferMemory()
     readonlymemory = ReadOnlySharedMemory(memory=memory)
     
-    agent = initialize_agent(tools, llm, agent="zero-shot-react-description", verbose=True, text=prompt, memory=memory)
+    agent = initialize_agent(tools, llm, agent="zero-shot-react-description", verbose=True, return_intermediate_steps=True, output_parser=custom_parser)
     
-    agent.run("Study this project folder, then create a list of project names that would best fit. Be creative.")
+    # agent.run("Study this project folder, then create a list of project names that would best fit. Be creative.")
+    response = agent(promptValue)
+    
+    print(json.dumps(response["intermediate_steps"], indent=2))
     
     #agent_chain = initialize_agent(tools, llm, agent="zero-shot-react-description", memory=memory, verbose=True)
     
@@ -129,13 +171,16 @@ def read_files_from_directory(directory):
     gitignore = read_gitignore(directory)
     for filename in os.listdir(directory):
         file_path = os.path.join(directory, filename)
+        print(f"Reading file: {file_path}")
         if os.path.isfile(file_path) and not is_ignored(filename, gitignore):
             with open(file_path, 'rb') as file:
                 raw_data = file.read()
                 encoding = chardet.detect(raw_data)['encoding']
+                print(f"Detected encoding: {encoding}")
             with open(file_path, 'r', encoding=encoding) as file:
                 content = file.read()
                 documents.append(content)
+                print(f"Read {len(content)} characters from file: {file_path}")
     return documents
 
 
