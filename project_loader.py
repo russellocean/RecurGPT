@@ -5,7 +5,7 @@ def load_project(project_folder):
     # Load the project
     
     print( "Loading project from folder:", project_folder)
-    loader = DirectoryLoader(project_folder)
+    loader = DirectoryLoader(project_folder, silent_errors=True)
     files = loader.load()
     print("Size of project:", len(files), "files.")
 

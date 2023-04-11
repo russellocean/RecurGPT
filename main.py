@@ -54,7 +54,7 @@ def main():
     
     agent = initialize_agent(tools, llm, agent="chat-zero-shot-react-description", verbose=True)
     
-    agent.run("Describe this project folder.")
+    agent.run("Study this project folder, then create a list of project names that would best fit. Be creative.")
     
     #agent_chain = initialize_agent(tools, llm, agent="zero-shot-react-description", memory=memory, verbose=True)
     
