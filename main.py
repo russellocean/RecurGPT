@@ -16,6 +16,8 @@ from langchain.chains.conversation.memory import ConversationBufferMemory
 from project_loader import load_project
 from utils import ask_user_for_project
 
+from config import config
+
 # Importing the FileViewer tool from file_viewer.py
 from file_viewer import FileViewer
 
@@ -23,19 +25,16 @@ from file_viewer import FileViewer
 load_dotenv()
 
 SimpleDirectoryReader = download_loader("SimpleDirectoryReader")
-llm = OpenAI(temperature=0.9)
-
-#index = VectorstoreIndexCreator().from_loaders([loader])
-
-# Initialize OpenAI
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+llm = OpenAI(temperature=config.temperature)
 
 def main():
     print("Welcome to RecurGPT please select your project folder.")
-    project_folder = ask_user_for_project()
+    config.project_folder = ask_user_for_project()
     
     # Load the project
-    index = load_project(project_folder)
+    index = load_project(config.project_folder)
+    
+    print("Current project folder:" + config.project_folder)
     
     # Creating an instance of the FileViewer tool
     file_viewer = FileViewer()

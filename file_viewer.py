@@ -1,7 +1,7 @@
+import os
 # Importing the necessary modules
-from langchain.agents import initialize_agent, Tool
-from langchain.agents import AgentType
 from langchain.tools import BaseTool
+from config import config
 
 # Defining a new tool class that inherits from BaseTool
 class FileViewer(BaseTool):
@@ -11,8 +11,11 @@ class FileViewer(BaseTool):
 
     # Defining the main logic of the tool
     def _run(self, file_path: str) -> str:
+        # Constructing the full file path
+        full_file_path = os.path.join(config.project_folder, file_path)
+
         # Opening the file in read mode
-        with open(file_path, "r") as f:
+        with open(full_file_path, "r") as f:
             # Reading the file contents
             file_contents = f.read()
 
