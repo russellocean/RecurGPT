@@ -6,13 +6,15 @@ from config import config
 # Defining a new tool class that inherits from BaseTool
 class FileViewer(BaseTool):
     # Setting the name and description of the tool
-    name = "File Viewer"
-    description = "A tool that views a file and returns its contents"
+    name = "View File"
+    description = "useful for when you need to view the contents of a file"
 
     # Defining the main logic of the tool
     def _run(self, file_path: str) -> str:
         # Constructing the full file path
         full_file_path = os.path.join(config.project_folder, file_path)
+        
+        print("Opening file:", full_file_path)
 
         # Opening the file in read mode
         with open(full_file_path, "r") as f:
