@@ -1,14 +1,15 @@
-from typing import Dict, List, Optional, Any
-
 from collections import deque
-from pydantic import BaseModel, Field
+from typing import Any, Dict, List, Optional
 
-from langchain import LLMChain
-from langchain.chains.base import Chain
 from langchain.llms import BaseLLM
+from langchain.chains.base import Chain
+from langchain import LLMChain, PromptTemplate
 from langchain.vectorstores.base import VectorStore
-from langchain.utilities import GoogleSerperAPIWrapper, WolframAlphaAPIWrapper
+from langchain.utilities import GoogleSerperAPIWrapper
+from langchain.utilities.wolfram_alpha import WolframAlphaAPIWrapper
 from langchain.agents import AgentExecutor, LLMSingleActionAgent, Tool
+
+from pydantic import BaseModel, Field
 
 from agent_components import CustomOutputParser, CustomPromptTemplate
 
@@ -31,27 +32,6 @@ class TaskCreationChain(LLMChain):
         prompt = PromptTemplate(
             template=task_creation_template,
             input_variables=["result", "task_description", "incomplete_tasks", "objective"],
-        )
-        return cls(prompt=prompt, llm=llm, verbose=verbose)
-    
-class TaskPrioritizationChain(LLMChain):
-    """Chain to prioritize tasks."""
-
-    @classmethod
-    def from_llm(cls, llm: BaseLLM, verbose: bool = True) -> LLMChain:
-        """Get the response parser."""
-        task_prioritization_template = (
-            "You are an task prioritization AI tasked with cleaning the formatting of and reprioritizing"
-            " the following tasks: {task_names}."
-            " Consider the ultimate objective of your team: {objective}."
-            " Do not remove any tasks. Return the result as a numbered list, like:"
-            " #. First task"
-            " #. Second task"
-            " Start the task list with number {next_task_id}."
-        )
-        prompt = PromptTemplate(
-            template=task_prioritization_template,
-            input_variables=["task_names", "next_task_id", "objective"],
         )
         return cls(prompt=prompt, llm=llm, verbose=verbose)
     
