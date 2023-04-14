@@ -104,8 +104,35 @@ class ViewCodeFilesTool:
 
     async def _arun(self) -> str:
         raise NotImplementedError("ViewCodeFilesTool does not support async")
+    
+class CreateFileTool:
+    name = "CreateFile"
+    description = "Creates a new file at the specified location"
 
+    def _run(self, file_path: str) -> str:
+        """Helper function to create a new file."""
 
+        # Check if the path already exists
+        if os.path.exists(file_path):
+            return f"Error: The specified path '{file_path}' already exists. Please provide a new file path."
+
+        # Create the file
+        try:
+            with open(file_path, 'w') as file:
+                file.write('')
+            output = f"File '{file_path}' has been created successfully."
+        except FileNotFoundError as e:
+            return f"Error: The specified directory for the file '{file_path}' does not exist."
+        except PermissionError as e:
+            return f"Error: You do not have permission to create the file '{file_path}'."
+        except Exception as e:
+            return f"Error: An unexpected error occurred while creating the file: {str(e)}"
+
+        return output
+
+    async def _arun(self) -> str:
+        raise NotImplementedError("CreateFileTool does not support async")
+    
 class ModifyCodeFilesTool(BaseTool):
     name = "ModifyCodeFiles"
     description = "Modifies code files in a specified location"
