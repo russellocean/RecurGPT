@@ -71,16 +71,35 @@ class ListFilesAndDirectoriesTool:
         raise NotImplementedError("ListFilesAndDirectoriesTool does not support async")
 
 
-class ViewCodeFilesTool(BaseTool):
+class ViewCodeFilesTool:
     name = "ViewCodeFiles"
     description = "Views code files in a specified location"
 
-    def _run(self) -> str:
+    def _run(self, file_path: str) -> str:
         """Helper function to view code files."""
+
+        # Check if the path is valid
+        if not os.path.exists(file_path):
+            return f"Error: The specified path '{file_path}' does not exist. Please provide a valid file path."
+
+        # Check if the path is a file
+        if not os.path.isfile(file_path):
+            return f"Error: The specified path '{file_path}' is not a file. Please provide a valid file path."
+
         # Call APIs or perform main functionality
-        # Handle errors and edge cases
-        # Return the output
-        output = ...
+        try:
+            with open(file_path, 'r') as file:
+                content = file.read()
+            output = f"Content of '{file_path}':\n{content}"
+        except FileNotFoundError as e:
+            return f"Error: The specified file '{file_path}' does not exist."
+        except PermissionError as e:
+            return f"Error: You do not have permission to access the file '{file_path}'."
+        except UnicodeDecodeError as e:
+            return f"Error: The file '{file_path}' contains non-text content or is not a supported coding file format."
+        except Exception as e:
+            return f"Error: An unexpected error occurred while reading the file: {str(e)}"
+
         return output
 
     async def _arun(self) -> str:
