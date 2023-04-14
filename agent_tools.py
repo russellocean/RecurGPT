@@ -70,7 +70,6 @@ class ListFilesAndDirectoriesTool:
     async def _arun(self) -> str:
         raise NotImplementedError("ListFilesAndDirectoriesTool does not support async")
 
-
 class ViewCodeFilesTool:
     name = "ViewCodeFiles"
     description = "Views code files in a specified location"
@@ -133,55 +132,65 @@ class CreateFileTool:
     async def _arun(self) -> str:
         raise NotImplementedError("CreateFileTool does not support async")
     
-class ModifyCodeFilesTool(BaseTool):
-    name = "ModifyCodeFiles"
-    description = "Modifies code files in a specified location"
+class ModifyFileTool:
+    name = "ModifyFile"
+    description = "Modifies the content of a file at the specified location"
 
-    def _run(self) -> str:
-        """Helper function to modify code files."""
+    def _run(self, file_path: str, new_content: str) -> str:
+        """Helper function to modify a file."""
+
+        # Check if the path is valid
+        if not os.path.exists(file_path):
+            return f"Error: The specified path '{file_path}' does not exist. Please provide a valid file path."
+
+        # Check if the path is a file
+        if not os.path.isfile(file_path):
+            return f"Error: The specified path '{file_path}' is not a file. Please provide a valid file path."
+
         # Call APIs or perform main functionality
-        # Handle errors and edge cases
-        # Return the output
-        output = ...
+        try:
+            with open(file_path, 'w') as file:
+                file.write(new_content)
+            output = f"File '{file_path}' has been modified successfully."
+        except FileNotFoundError as e:
+            return f"Error: The specified file '{file_path}' does not exist."
+        except PermissionError as e:
+            return f"Error: You do not have permission to modify the file '{file_path}'."
+        except Exception as e:
+            return f"Error: An unexpected error occurred while modifying the file: {str(e)}"
+
         return output
 
     async def _arun(self) -> str:
-        raise NotImplementedError("ModifyCodeFilesTool does not support async")
-
-
-class SelfCorrectOutputTool(BaseTool):
-    name = "SelfCorrectOutput"
-    description = "Self-corrects the tool's output"
-
-    def _run(self) -> str:
-        """Helper function to self-correct the tool's output."""
-        # Call APIs or perform main functionality
-        # Handle errors and edge cases
-        # Return the output
-        output = ...
-        return output
-
-    async def _arun(self) -> str:
-        raise NotImplementedError("SelfCorrectOutputTool does not support async")
-
-
-class SearchInternetTool(BaseTool):
-    name = "SearchInternet"
-    description = "Searches the internet for documentation and code repositories"
-
-    def _run(self) -> str:
-        """Helper function to search the internet for documentation and code repositories."""
-        # Call APIs or perform main functionality
-        # Handle errors and edge cases
-        # Return the output
-        output = ...
-        return output
-
-    async def _arun(self) -> str:
-        raise NotImplementedError("SearchInternetTool does not support async")
+        raise NotImplementedError("ModifyFileTool does not support async")
 
 # Define the tool class
 class MRKLDirectAPIWrapper(BaseModel):
+    def _list_directories(self) -> str:
+        """Helper function to list directories."""
+        tool = ListDirectoriesTool()
+        return tool.run(self.path)
+
+    def _view_code_files(self) -> str:
+        """Helper function to view code files."""
+        tool = ViewCodeFilesTool()
+        return tool.run(self.file_path)
+
+    def _modify_code_files(self) -> str:
+        """Helper function to modify code files."""
+        tool = ModifyFileTool()
+        return tool.run(self.file_path, self.new_content)
+
+    def _self_correct_output(self) -> str:
+        """Helper function to self-correct output."""
+        # Implement the self-correction logic here
+        return "This feature is not implemented yet."
+
+    def _search_internet(self) -> str:
+        """Helper function to search the internet for documentation and code repositories."""
+        # Implement the internet search logic here
+        return "This feature is not implemented yet."
+
     def run(self, query: str) -> str:
         # Main method for running the tool
         if "list directories" in query:
