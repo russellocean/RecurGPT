@@ -1,0 +1,60 @@
+from langchain import LLMChain
+from langchain.llms import BaseLLM
+from langchain.prompt_templates import PromptTemplate
+
+class ManagerCreationChain(LLMChain):
+    """Chain to manage agents."""
+
+    @classmethod
+    def from_llm(cls, llm: BaseLLM, verbose: bool = True, tools: List[str] = None) -> LLMChain:
+        
+        """Get the response parser."""
+        manager_prompt_template = (
+            "As a manager AI, your role is to oversee the task creation agent, task prioritization agent, and execution agent."
+            " Your goal is to effectively coordinate the team to accomplish the following objective: {objective}."
+            " Your responsibilities include assigning tasks, prioritizing tasks, and ensuring their completion."
+            " Adhere to professional standards and best practices during the process."
+            " Use the following available tools: {tools} to create and call new agents as needed."
+            " Based on the outcomes, generate new tasks for the AI system to complete, ensuring they do not duplicate incomplete tasks."
+            " Continuously monitor the progress of all agents and, upon completion, return the final result."
+        )
+        tool_names = ", ".join(tools)
+        prompt = PromptTemplate(
+            template=manager_prompt_template,
+            input_variables=[
+                "result",
+                "task_description",
+                "incomplete_tasks",
+                "objective",
+                "tools",
+            ],
+            tools=tool_names,
+        )
+        return cls(prompt=prompt, llm=llm, verbose=verbose)
+
+class TaskCreationChain(LLMChain):
+    """Chain to generates tasks."""
+
+    @classmethod
+    def from_llm(cls, llm: BaseLLM, verbose: bool = True) -> LLMChain:
+        """Get the response parser."""
+        task_creation_template = (
+            "You are an task creation AI that uses the result of an execution agent"
+            " to create new tasks with the following objective: {objective},"
+            " The last completed task has the result: {result}."
+            " This result was based on this task description: {task_description}."
+            " These are incomplete tasks: {incomplete_tasks}."
+            " Based on the result, create new tasks to be completed"
+            " by the AI system that do not overlap with incomplete tasks."
+            " Return the tasks as an array."
+        )
+        prompt = PromptTemplate(
+            template=task_creation_template,
+            input_variables=[
+                "result",
+                "task_description",
+                "incomplete_tasks",
+                "objective",
+            ],
+        )
+        return cls(prompt=prompt, llm=llm, verbose=verbose)
