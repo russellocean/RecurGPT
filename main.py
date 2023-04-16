@@ -1,15 +1,10 @@
-
-from pyexpat import model
 from dotenv import load_dotenv
 
-from langchain import OpenAI
-
-from langchain.agents import ZeroShotAgent, AgentExecutor
-from langchain import OpenAI, LLMChain
+from langchain.agents import ZeroShotAgent
 from langchain.chat_models import ChatOpenAI
-
-
-
+from langchain.agents import initialize_agent
+from langchain.agents import AgentType
+import json
 
 from agent_tools import ListFilesAndDirectoriesTool, ViewCodeFilesTool, CreateFileTool, ModifyFileTool
 
@@ -32,9 +27,9 @@ def main():
     2. Prioritizing tasks based on the results of previous tasks.\n\
     3. Executing tasks.\n\
     Adhere to professional standards and best practices during the process.\n\
-    Always monitor your overall progress towards the objective."""
-
-
+    Always monitor your overall progress towards the objective.
+    
+    Provide the final answer with Final Answer: <answer>"""
     
     suffix = """ 
         Begin! 
@@ -59,17 +54,24 @@ def main():
         
         print(prompt.template)
         
-        llm_chain = LLMChain(llm=OpenAI(temperature=0), prompt=prompt)
+        #llm_chain = LLMChain(llm=OpenAI(temperature=0), prompt=prompt)
         
-        llm = ChatOpenAI(temperature=0, model="gpt-3.5-turbo")
-        tool_names = [tool.name for tool in tools]
+        llm = ChatOpenAI(temperature=0, model="gpt-4")
+        #tool_names = [tool.name for tool in tools]
 
-        agent = ZeroShotAgent(llm_chain=llm_chain, allowed_tools=tool_names, verbose=True, return_intermediate_steps=True)
-        agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True)
+        #agent = ZeroShotAgent(llm_chain=llm_chain, allowed_tools=tool_names, verbose=True, return_intermediate_steps=True)
         
-        response = agent_executor.run(OBJECTIVE)
+        agent = initialize_agent(tools, llm, agent=AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION, verbose=True, return_intermediate_steps=True) 
+        response = agent({"input":OBJECTIVE})
+        #agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True)
+        # The actual return type is a NamedTuple for the agent action, and then an observation
+        print(response["intermediate_steps"])
         
-        print(response)
+        print(json.dumps(response["intermediate_steps"], indent=2))
+        #response = agent_executor.run(OBJECTIVE)
+        #intermediate_steps = response.get("intermediate_steps", [])
+        
+        #print(intermediate_steps)
 
         # Logging of LLMChains
         verbose=False

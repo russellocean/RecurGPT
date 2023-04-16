@@ -72,7 +72,7 @@ class ListFilesAndDirectoriesTool(BaseTool):
 
 class ViewCodeFilesTool(BaseTool):
     name = "ViewCodeFiles"
-    description = "Views code files in a specified location"
+    description = "Views code files in a specified location. Provide the full file path as expected by os.path, not a relative path. Example usage: `ViewCodeFiles('/path/to/file.txt')`"
 
     def _run(self, file_path: str) -> str:
         """Helper function to view code files."""
@@ -106,7 +106,7 @@ class ViewCodeFilesTool(BaseTool):
     
 class CreateFileTool(BaseTool):
     name = "CreateFile"
-    description = "Creates a new file at the specified location"
+    description = "Creates a new file at the specified location. Example usage: `CreateFile('/path/to/file.txt')`"
 
     def _run(self, file_path: str) -> str:
         """Helper function to create a new file."""
@@ -131,13 +131,14 @@ class CreateFileTool(BaseTool):
 
     async def _arun(self) -> str:
         raise NotImplementedError("CreateFileTool does not support async")
-    
+
 class ModifyFileTool(BaseTool):
     name = "ModifyFile"
-    description = "Modifies the content of a file at the specified location"
+    description = "Modifies the content of a file at the specified location. The input should be a string with the file path and new content separated by a comma. For example, 'path/to/file.txt, new content'."
 
-    def _run(self, file_path: str, new_content: str) -> str:
+    def _run(self, inputs: str) -> str:
         """Helper function to modify a file."""
+        file_path, content = self.parse_inputs(inputs)
 
         # Check if the path is valid
         if not os.path.exists(file_path):
@@ -150,7 +151,7 @@ class ModifyFileTool(BaseTool):
         # Call APIs or perform main functionality
         try:
             with open(file_path, 'w') as file:
-                file.write(new_content)
+                file.write(content)
             output = f"File '{file_path}' has been modified successfully."
         except FileNotFoundError as e:
             return f"Error: The specified file '{file_path}' does not exist."
@@ -161,8 +162,45 @@ class ModifyFileTool(BaseTool):
 
         return output
 
+    def parse_inputs(self, inputs: str) -> tuple:
+        file_path, content = inputs.split(",", 1)
+        return file_path.strip(), content.strip()
+
     async def _arun(self) -> str:
-        raise NotImplementedError("ModifyFileTool does not support async")
+        raise NotImplementedError("ModifyFileToolWithParser does not support async")
+
+  
+# class ModifyFileTool(BaseTool):
+#     name = "ModifyFile"
+#     description = "Modifies the content of a file at the specified location. Example usage: ('file_path': '<path/to/file>' , 'content': '<new content>')"
+
+#     def _run(self, file_path: str, content: str) -> str:
+#         """Helper function to modify a file."""
+
+#         # Check if the path is valid
+#         if not os.path.exists(file_path):
+#             return f"Error: The specified path '{file_path}' does not exist. Please provide a valid file path."
+
+#         # Check if the path is a file
+#         if not os.path.isfile(file_path):
+#             return f"Error: The specified path '{file_path}' is not a file. Please provide a valid file path."
+
+#         # Call APIs or perform main functionality
+#         try:
+#             with open(file_path, 'w') as file:
+#                 file.write(content)
+#             output = f"File '{file_path}' has been modified successfully."
+#         except FileNotFoundError as e:
+#             return f"Error: The specified file '{file_path}' does not exist."
+#         except PermissionError as e:
+#             return f"Error: You do not have permission to modify the file '{file_path}'."
+#         except Exception as e:
+#             return f"Error: An unexpected error occurred while modifying the file: {str(e)}"
+
+#         return output
+
+#     async def _arun(self) -> str:
+#         raise NotImplementedError("ModifyFileTool does not support async")
 
 # Define the tool class
 # class MRKLDirectAPIWrapper(BaseModel):
