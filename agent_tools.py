@@ -6,7 +6,7 @@ from langchain.tools import BaseTool
 
 class ListDirectoriesTool(BaseTool):
     name = "ListDirectories"
-    description = "Lists directories in a specified location. Provide the full directory path as expected by os.path, not a relative path. Example usage: `ListDirectories('/path/to/directory')`"
+    description = "Lists directories in a specified location. The input should be a string containing the full directory path as expected by os.path, not a relative path. For example, 'path/to/directory'."
 
     def _run(self, path: str) -> str:
         """Helper function to list directories."""
@@ -35,7 +35,7 @@ class ListDirectoriesTool(BaseTool):
     
 class ListFilesAndDirectoriesTool(BaseTool):
     name = "ListFilesAndDirectories"
-    description = "Lists files and directories in a specified location. Provide the full directory path as expected by os.path, not a relative path."
+    description = "Lists files and directories in a specified location. The input should be a string containing the full directory path as expected by os.path, not a relative path. For example, 'path/to/directory'."
 
     def _run(self, path: str) -> str:
         """Helper function to list files and directories."""
@@ -72,7 +72,7 @@ class ListFilesAndDirectoriesTool(BaseTool):
 
 class ViewCodeFilesTool(BaseTool):
     name = "ViewCodeFiles"
-    description = "Views code files in a specified location. Provide the full file path as expected by os.path, not a relative path. Example usage: `ViewCodeFiles('/path/to/file.txt')`"
+    description = "Views code files in a specified location. The input should be a string containing the full file path as expected by os.path, not a relative path. For example, 'path/to/file.txt'."
 
     def _run(self, file_path: str) -> str:
         """Helper function to view code files."""
@@ -106,7 +106,8 @@ class ViewCodeFilesTool(BaseTool):
     
 class CreateFileTool(BaseTool):
     name = "CreateFile"
-    description = "Creates a new file at the specified location. Example usage: `CreateFile('/path/to/file.txt')`"
+    description = "Creates a new file at the specified location. The input should be a string containing the full file path as expected by os.path, not a relative path. For example, 'path/to/file.txt'."
+
 
     def _run(self, file_path: str) -> str:
         """Helper function to create a new file."""
