@@ -1,17 +1,25 @@
 import os
+import json
+import openai
 
 # Import necessary components from langchain
-from langchain import LLMChain
 from langchain.chat_models import ChatOpenAI
 from langchain.utilities.wolfram_alpha import WolframAlphaAPIWrapper
 from langchain.utilities import GoogleSerperAPIWrapper
-from langchain.agents import Tool, AgentExecutor, LLMSingleActionAgent
+from langchain.agents import (
+    Tool, 
+    ZeroShotAgent, 
+    initialize_agent, 
+    AgentType
+)
 
 # Import custom components
-from agent_components import CustomPromptTemplate, CustomOutputParser
-
-# Import OpenAI API
-import openai
+from agent_tools import (
+    ListFilesAndDirectoriesTool, 
+    ViewCodeFilesTool, 
+    CreateFileTool, 
+    ModifyFileTool
+)
 
 # Retrieve API keys and app ID from environment variables
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
@@ -22,80 +30,76 @@ WOLFRAM_ALPHA_APPID = os.environ.get("WOLFRAM_ALPHA_APPID")
 openai.api_key = OPENAI_API_KEY
 
 def setup_agent():
+    """
+    Set up and return an instance of the agent.
+    """
+    
     # Initialize API wrappers
     search = GoogleSerperAPIWrapper()
     wolfram = WolframAlphaAPIWrapper()
+    
+    # Initialize custom tools
+    list_files_and_directories_tool = ListFilesAndDirectoriesTool()
+    view_code_files_tool = ViewCodeFilesTool()
+    create_file_tool = CreateFileTool()
+    modify_file_tool = ModifyFileTool()
 
     # Define available tools
     tools = [
         Tool(
             name="Search",
             func=search.run,
-            description="Useful for when you need to answer questions about current events. You should ask targeted questions"
+            description="Useful for answering questions about current events. Ask targeted questions."
         ),
         Tool(
             name="Wolfram",
             func=wolfram.run,
-            description="Useful for when you need to answer questions about math, science, geography."
+            description="Useful for answering questions about math, science, and geography."
         )
     ]
     
-    # Set up the base template for the agent
-    template = """Answer the following questions as best you can. You have access to the following tools:
-    {tools}
-    Use the following format:
-    Question: the input question you must answer
-    Thought: you should always think about what to do
-    Action: the action to take, should be one of [{tool_names}]
-    Action Input: the input to the action
-    Observation: the result of the action
-    ... (this Thought/Action/Action Input/Observation can repeat N times)
-    Thought: I now know the final answer
-    Final Answer: the final answer to the original input question
+    tools = [list_files_and_directories_tool, view_code_files_tool, create_file_tool, modify_file_tool] + tools
     
-    If answering a coding question only provide code, add comments to communicate your thought process.
-
-    Begin!
-    Question: {input}
-    {agent_scratchpad}"""
+    prefix = """You are an AI that is tasked with the objective of {objective}.\n\
+    Your goal is to effectively coordinate the execution of tasks. Your responsibilities include:\n\
+    1. Creating new tasks based on the results of previous tasks.\n\
+    2. Prioritizing tasks based on the results of previous tasks.\n\
+    3. Executing tasks.\n\
+    Adhere to professional standards and best practices during the process.\n\
+    Always monitor your overall progress towards the objective.
     
-    # Set up the custom prompt template
-    prompt = CustomPromptTemplate(
-        template=template,
-        tools=tools,
-        # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
-        # This includes the `intermediate_steps` variable because that is needed
-        input_variables=["input", "intermediate_steps"]
+    Provide the final answer with Final Answer: <answer>"""
+    
+    suffix = """Begin!
+    
+    Objective: {objective}
+    {agent_scratchpad}
+    """
+    
+    prompt = ZeroShotAgent.create_prompt(
+        tools,
+        prefix=prefix,
+        suffix=suffix,
+        input_variables=["objective", "agent_scratchpad"]    
     )
     
-    # Initialize custom output parser
-    output_parser = CustomOutputParser()
+    print(prompt.template)
     
-    # Set up the ChatOpenAI instance
-    llm = ChatOpenAI(temperature=0.5, model="gpt-4")
+    llm = ChatOpenAI(temperature=0, model="gpt-4")
+    
+    agent = initialize_agent(tools, llm, agent=AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION, verbose=True, return_intermediate_steps=True)
 
-    # Set up the LLMChain
-    llm_chain = LLMChain(llm=llm, prompt=prompt)
-    
-    # Extract tool names for the agent
-    tool_names = [tool.name for tool in tools]
-    
-    # Set up the LLMSingleActionAgent
-    agent = LLMSingleActionAgent(
-        llm_chain=llm_chain, 
-        output_parser=output_parser,
-        stop=["\nObservation:"], 
-        allowed_tools=tool_names
-    )
-    
-    # Set up the AgentExecutor
-    agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True)
-
-    return agent_executor
-
-# Initialize the agent_executor
-agent_executor = setup_agent()
+    return agent
 
 def ask_agent(message):
-    # Run the agent with the provided message
-    return agent_executor.run(message)
+    """
+    Run the agent with the provided message and return its response.
+    """
+    
+    agent = setup_agent()
+    response = agent({"input": message})
+    
+    print(response["intermediate_steps"])
+        
+    print(json.dumps(response["intermediate_steps"], indent=2))
+    return response
