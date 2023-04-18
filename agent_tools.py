@@ -1,8 +1,8 @@
 import os
 
 # Import necessary libraries and modules
-from pydantic import BaseModel
 from langchain.tools import BaseTool
+
 
 class ListDirectoriesTool(BaseTool):
     name = "ListDirectories"
@@ -56,12 +56,12 @@ class ListFilesAndDirectoriesTool(BaseTool):
             output_directories = "Directories: " + ", ".join(directories)
             output_files = "Files: " + ", ".join(files)
             output = output_directories + "\n" + output_files
-        except FileNotFoundError as e:
+        except FileNotFoundError:
             return f"Error: The specified directory '{path}' does not exist."
-        except PermissionError as e:
+        except PermissionError:
             return f"Error: You do not have permission to access the directory '{path}'."
-        except TypeError as e:
-            return f"Error: An internal function was called with an invalid argument."
+        except TypeError:
+            return "Error: An internal function was called with an invalid argument."
         except Exception as e:
             return f"Error: An unexpected error occurred while listing files and directories: {str(e)}"
 
@@ -90,11 +90,11 @@ class ViewCodeFilesTool(BaseTool):
             with open(file_path, 'r') as file:
                 content = file.read()
             output = f"Content of '{file_path}':\n{content}"
-        except FileNotFoundError as e:
+        except FileNotFoundError:
             return f"Error: The specified file '{file_path}' does not exist."
-        except PermissionError as e:
+        except PermissionError:
             return f"Error: You do not have permission to access the file '{file_path}'."
-        except UnicodeDecodeError as e:
+        except UnicodeDecodeError:
             return f"Error: The file '{file_path}' contains non-text content or is not a supported coding file format."
         except Exception as e:
             return f"Error: An unexpected error occurred while reading the file: {str(e)}"
@@ -121,9 +121,9 @@ class CreateFileTool(BaseTool):
             with open(file_path, 'w') as file:
                 file.write('')
             output = f"File '{file_path}' has been created successfully."
-        except FileNotFoundError as e:
+        except FileNotFoundError:
             return f"Error: The specified directory for the file '{file_path}' does not exist."
-        except PermissionError as e:
+        except PermissionError:
             return f"Error: You do not have permission to create the file '{file_path}'."
         except Exception as e:
             return f"Error: An unexpected error occurred while creating the file: {str(e)}"
@@ -154,9 +154,9 @@ class ModifyFileTool(BaseTool):
             with open(file_path, 'w') as file:
                 file.write(content)
             output = f"File '{file_path}' has been modified successfully."
-        except FileNotFoundError as e:
+        except FileNotFoundError:
             return f"Error: The specified file '{file_path}' does not exist."
-        except PermissionError as e:
+        except PermissionError:
             return f"Error: You do not have permission to modify the file '{file_path}'."
         except Exception as e:
             return f"Error: An unexpected error occurred while modifying the file: {str(e)}"

@@ -2,7 +2,9 @@ import os
 import tempfile
 import unittest
 from unittest.mock import patch
+
 from agent_tools import ListFilesAndDirectoriesTool, ViewCodeFilesTool
+
 
 class TestListFilesAndDirectoriesTool(unittest.TestCase):
     
@@ -97,7 +99,4 @@ class TestViewCodeFilesTool(unittest.TestCase):
         
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestListFilesAndDirectoriesTool)
-    unittest.TextTestRunner(verbosity=2).run(suite)
-    
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestViewCodeFilesTool)
     unittest.TextTestRunner(verbosity=2).run(suite)
