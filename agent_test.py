@@ -7,10 +7,9 @@ from agent_tools import ListFilesAndDirectoriesTool, ViewCodeFilesTool
 
 
 class TestListFilesAndDirectoriesTool(unittest.TestCase):
-    
     def setUp(self):
         self.tool = ListFilesAndDirectoriesTool()
-    
+
     def test_valid_directory(self):
         path = "/Users/russellocean/Dev/RecurGPT"
         expected_directories = "Directories: .chroma, __pycache__, .git"
@@ -18,19 +17,19 @@ class TestListFilesAndDirectoriesTool(unittest.TestCase):
         actual_output = self.tool._run(path)
         self.assertIn(expected_directories, actual_output)
         self.assertIn(expected_files, actual_output)
-        
+
     def test_invalid_directory(self):
         path = "/path/to/invalid/directory"
         expected_output = "Error: The specified path '/path/to/invalid/directory' does not exist. Please provide a valid directory."
         actual_output = self.tool._run(path)
         self.assertEqual(actual_output, expected_output)
-        
+
     def test_non_directory_path(self):
         path = "/Users/russellocean/Dev/RecurGPT/main.py"
         expected_output = "Error: The specified path '/Users/russellocean/Dev/RecurGPT/main.py' is not a directory. Please provide a valid directory."
         actual_output = self.tool._run(path)
         self.assertEqual(actual_output, expected_output)
-        
+
     def test_unexpected_error(self):
         path = "/Users/russellocean/Dev/RecurGPT"
 
@@ -39,17 +38,17 @@ class TestListFilesAndDirectoriesTool(unittest.TestCase):
             raise TypeError("Invalid argument")
 
         # Patch os.listdir with the raise_error function
-        with patch('os.listdir', side_effect=raise_error):
-            expected_output = "Error: An internal function was called with an invalid argument."
+        with patch("os.listdir", side_effect=raise_error):
+            expected_output = (
+                "Error: An internal function was called with an invalid argument."
+            )
             actual_output = self.tool._run(path)
             self.assertEqual(actual_output, expected_output)
-            
-    
 
-    
     # def test_async_not_implemented(self):
     #     with self.assertRaises(NotImplementedError):
     #         self.tool._arun()
+
 
 class TestViewCodeFilesTool(unittest.TestCase):
     def setUp(self):
@@ -79,14 +78,16 @@ class TestViewCodeFilesTool(unittest.TestCase):
         # Set the file permissions to read-only
         os.chmod(temp_file_path, 0o400)
 
-        expected_output = f"Error: You do not have permission to access the file '{temp_file_path}'."
+        expected_output = (
+            f"Error: You do not have permission to access the file '{temp_file_path}'."
+        )
         actual_output = self.tool._run(temp_file_path)
         self.assertEqual(actual_output, expected_output)
 
         os.remove(temp_file_path)
 
     def test_unicode_decode_error(self):
-        with tempfile.NamedTemporaryFile(delete=False, mode='wb') as temp_file:
+        with tempfile.NamedTemporaryFile(delete=False, mode="wb") as temp_file:
             # Write a binary file that can't be decoded as text
             temp_file.write(b"\x00\x01\x02\x03")
             temp_file_path = temp_file.name
@@ -96,7 +97,8 @@ class TestViewCodeFilesTool(unittest.TestCase):
         self.assertEqual(actual_output, expected_output)
 
         os.remove(temp_file_path)
-        
-if __name__ == '__main__':
+
+
+if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(TestListFilesAndDirectoriesTool)
     unittest.TextTestRunner(verbosity=2).run(suite)

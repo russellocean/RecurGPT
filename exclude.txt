@@ -1,1 +1,122 @@
-.git/*
+# Binary files
+*.bin
+*.exe
+*.dll
+*.so
+*.dylib
+*.lib
+*.a
+
+# Object files
+*.o
+*.obj
+
+# Compiled files
+*.class
+*.pyc
+*.pyo
+*.pyd
+
+# Logs
+*.log
+
+# Cache
+*.cache
+__pycache__/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+*.swp
+
+# Version control files
+.git
+.gitignore
+.svn
+.cvsignore
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Build files
+*.out
+*.class
+
+# Package files
+*.jar
+*.war
+*.ear
+*.egg
+*.whl
+
+# Backup files
+*~
+*.bak
+
+# Configuration files
+*.cfg
+*.ini
+*.json
+*.properties
+*.yml
+*.yaml
+*.xml
+
+# Images
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+
+# Fonts
+*.ttf
+*.otf
+*.woff
+*.woff2
+
+# Archives
+*.zip
+*.tar
+*.gz
+*.bz2
+*.7z
+*.rar
+*.xz
+
+# Media
+*.mp3
+*.mp4
+*.avi
+*.mkv
+*.flv
+*.mov
+*.wmv
+*.mpeg
+*.webm
+*.ogg
+*.wav
+
+# Databases
+*.sqlite
+*.db
+*.sql
+*.accdb
+*.mdb
+
+# Compiled code files
+*.pyc
+*.pyo
+*.rbc
+*.class
+
+# Virtual environment files
+venv/
+env/
+.virtualenv/
+
+
+# Auto added below this line
+.ico

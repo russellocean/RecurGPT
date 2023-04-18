@@ -17,12 +17,16 @@ class ListDirectoriesTool(BaseTool):
 
         # Check if the path is a directory
         if not os.path.isdir(path):
-            print("Error: The specified path is not a directory. Please provide a valid directory.")
+            print(
+                "Error: The specified path is not a directory. Please provide a valid directory."
+            )
             return f"Error: The specified path '{path}' is not a directory. Please provide a valid directory."
 
         # Call APIs or perform main functionality
         try:
-            directories = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
+            directories = [
+                d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))
+            ]
             output = ", ".join(directories)
         except Exception as e:
             return f"Error: An unexpected error occurred while listing directories: {str(e)}"
@@ -31,8 +35,8 @@ class ListDirectoriesTool(BaseTool):
 
     async def _arun(self) -> str:
         raise NotImplementedError("ListDirectoriesTool does not support async")
-    
-    
+
+
 class ListFilesAndDirectoriesTool(BaseTool):
     name = "ListFilesAndDirectories"
     description = "Lists files and directories in a specified location. The input should be a string containing the full directory path as expected by os.path, not a relative path. For example, 'path/to/directory'."
@@ -59,16 +63,19 @@ class ListFilesAndDirectoriesTool(BaseTool):
         except FileNotFoundError:
             return f"Error: The specified directory '{path}' does not exist."
         except PermissionError:
-            return f"Error: You do not have permission to access the directory '{path}'."
+            return (
+                f"Error: You do not have permission to access the directory '{path}'."
+            )
         except TypeError:
             return "Error: An internal function was called with an invalid argument."
         except Exception as e:
             return f"Error: An unexpected error occurred while listing files and directories: {str(e)}"
 
         return output
-    
+
     async def _arun(self) -> str:
         raise NotImplementedError("ListFilesAndDirectoriesTool does not support async")
+
 
 class ViewCodeFilesTool(BaseTool):
     name = "ViewCodeFiles"
@@ -87,27 +94,31 @@ class ViewCodeFilesTool(BaseTool):
 
         # Call APIs or perform main functionality
         try:
-            with open(file_path, 'r') as file:
+            with open(file_path, "r") as file:
                 content = file.read()
             output = f"Content of '{file_path}':\n{content}"
         except FileNotFoundError:
             return f"Error: The specified file '{file_path}' does not exist."
         except PermissionError:
-            return f"Error: You do not have permission to access the file '{file_path}'."
+            return (
+                f"Error: You do not have permission to access the file '{file_path}'."
+            )
         except UnicodeDecodeError:
             return f"Error: The file '{file_path}' contains non-text content or is not a supported coding file format."
         except Exception as e:
-            return f"Error: An unexpected error occurred while reading the file: {str(e)}"
+            return (
+                f"Error: An unexpected error occurred while reading the file: {str(e)}"
+            )
 
         return output
 
     async def _arun(self) -> str:
         raise NotImplementedError("ViewCodeFilesTool does not support async")
-    
+
+
 class CreateFileTool(BaseTool):
     name = "CreateFile"
     description = "Creates a new file at the specified location. The input should be a string containing the full file path as expected by os.path, not a relative path. For example, 'path/to/file.txt'."
-
 
     def _run(self, file_path: str) -> str:
         """Helper function to create a new file."""
@@ -118,20 +129,25 @@ class CreateFileTool(BaseTool):
 
         # Create the file
         try:
-            with open(file_path, 'w') as file:
-                file.write('')
+            with open(file_path, "w") as file:
+                file.write("")
             output = f"File '{file_path}' has been created successfully."
         except FileNotFoundError:
             return f"Error: The specified directory for the file '{file_path}' does not exist."
         except PermissionError:
-            return f"Error: You do not have permission to create the file '{file_path}'."
+            return (
+                f"Error: You do not have permission to create the file '{file_path}'."
+            )
         except Exception as e:
-            return f"Error: An unexpected error occurred while creating the file: {str(e)}"
+            return (
+                f"Error: An unexpected error occurred while creating the file: {str(e)}"
+            )
 
         return output
 
     async def _arun(self) -> str:
         raise NotImplementedError("CreateFileTool does not support async")
+
 
 class ModifyFileTool(BaseTool):
     name = "ModifyFile"
@@ -151,13 +167,15 @@ class ModifyFileTool(BaseTool):
 
         # Call APIs or perform main functionality
         try:
-            with open(file_path, 'w') as file:
+            with open(file_path, "w") as file:
                 file.write(content)
             output = f"File '{file_path}' has been modified successfully."
         except FileNotFoundError:
             return f"Error: The specified file '{file_path}' does not exist."
         except PermissionError:
-            return f"Error: You do not have permission to modify the file '{file_path}'."
+            return (
+                f"Error: You do not have permission to modify the file '{file_path}'."
+            )
         except Exception as e:
             return f"Error: An unexpected error occurred while modifying the file: {str(e)}"
 
