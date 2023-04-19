@@ -26,7 +26,7 @@ def main():
     )
 
     # Setup the agent
-    agent = setup_agent(project_knowledge)
+    agent = setup_agent(project_knowledge, project_repository)
 
     print("Project repository selected: " + project_repository)
     print("Now, lets begin with the agent!")
