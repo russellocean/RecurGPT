@@ -1,7 +1,7 @@
 from langchain import OpenAI
 from langchain.chains import RetrievalQAWithSourcesChain
 
-from agent_utils import ask_agent
+from agent_utils import ask_agent, setup_agent
 from file_utils import (
     chroma_vectorize,
     load_documents_from_repository,
@@ -18,12 +18,15 @@ def main():
     ignore_file = select_ignore_file(initial_dir=project_repository)
     documents = load_documents_from_repository(project_repository, ignore_file)
     preview_documents(documents)
-
     docsearch = chroma_vectorize(documents)
 
-    RetrievalQAWithSourcesChain.from_chain_type(
+    # Create a vectorstore agent
+    project_knowledge = RetrievalQAWithSourcesChain.from_chain_type(
         OpenAI(temperature=0), chain_type="stuff", retriever=docsearch.as_retriever()
     )
+
+    # Setup the agent
+    agent = setup_agent(project_knowledge)
 
     print("Project repository selected: " + project_repository)
     print("Now, lets begin with the agent!")
@@ -36,10 +39,10 @@ def main():
             break
 
         OBJECTIVE = question
+        ask_agent(agent, OBJECTIVE)
 
         # answer = chain({"question": OBJECTIVE})
         # print(answer["answer"])
-        ask_agent(OBJECTIVE)
 
 
 if __name__ == "__main__":

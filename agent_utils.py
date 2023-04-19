@@ -4,7 +4,7 @@ import os
 import openai
 from langchain.agents import AgentType, Tool, ZeroShotAgent, initialize_agent
 from langchain.chat_models import ChatOpenAI
-from langchain.utilities import GoogleSerperAPIWrapper
+from langchain.utilities import GoogleSerperAPIWrapper, TextRequestsWrapper
 from langchain.utilities.wolfram_alpha import WolframAlphaAPIWrapper
 
 # Import custom components
@@ -24,7 +24,7 @@ WOLFRAM_ALPHA_APPID = os.environ.get("WOLFRAM_ALPHA_APPID")
 openai.api_key = OPENAI_API_KEY
 
 
-def setup_agent():
+def setup_agent(context):
     """
     Set up and return an instance of the agent.
     """
@@ -32,6 +32,7 @@ def setup_agent():
     # Initialize API wrappers
     search = GoogleSerperAPIWrapper()
     wolfram = WolframAlphaAPIWrapper()
+    requests = TextRequestsWrapper()
 
     # Initialize custom tools
     list_files_and_directories_tool = ListFilesAndDirectoriesTool()
@@ -50,6 +51,16 @@ def setup_agent():
             name="Wolfram",
             func=wolfram.run,
             description="Useful for answering questions about math, science, and geography.",
+        ),
+        Tool(
+            name="Requests",
+            func=requests.run,
+            description="Useful for fetch data from a website.",
+        ),
+        Tool(
+            name="Context",
+            func=context.run,
+            description="Useful for when you need information about the current project. Can be used to answer questions about the project's codebase, documentation, and more.",
         ),
     ]
 
@@ -98,7 +109,7 @@ def setup_agent():
     return agent
 
 
-def ask_agent(message):
+def ask_agent(agent, message):
     """
     Run the agent with the provided message and return its response.
     """

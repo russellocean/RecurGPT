@@ -101,7 +101,9 @@ def chroma_vectorize(documents):
     splitter = RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=100)
     content = splitter.split_documents(documents)
     # splitter = CharacterTextSplitter()
-    vector_store = Chroma.from_documents(content, embeddings)
+    vector_store = Chroma.from_documents(
+        content, embeddings, collection_name="project-repo"
+    )
     return vector_store
 
 
