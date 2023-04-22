@@ -5,7 +5,6 @@ from agent_utils import ask_agent, setup_agent
 from file_utils import (
     chroma_vectorize,
     load_documents_from_repository,
-    preview_documents,
     select_ignore_file,
     select_project_repository,
 )
@@ -17,12 +16,12 @@ def main():
     project_repository = select_project_repository()
     ignore_file = select_ignore_file(initial_dir=project_repository)
     documents = load_documents_from_repository(project_repository, ignore_file)
-    preview_documents(documents)
+    # preview_documents(documents)
     docsearch = chroma_vectorize(documents)
 
     # Create a vectorstore agent
     project_knowledge = RetrievalQAWithSourcesChain.from_chain_type(
-        OpenAI(temperature=0), chain_type="stuff", retriever=docsearch.as_retriever()
+        OpenAI(temperature=0.5), chain_type="stuff", retriever=docsearch.as_retriever()
     )
 
     # Setup the agent
@@ -39,8 +38,9 @@ def main():
             break
 
         OBJECTIVE = question
-        ask_agent(agent, OBJECTIVE)
+        response = ask_agent(agent, OBJECTIVE)
 
+        print(f"Agent: {response}")
         # answer = chain({"question": OBJECTIVE})
         # print(answer["answer"])
 

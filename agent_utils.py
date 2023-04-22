@@ -1,4 +1,3 @@
-import json
 import os
 from typing import List, Optional
 
@@ -64,8 +63,8 @@ def setup_agent(context, project_directory):
         # ),
         Tool(
             name="Context",
-            func=context.run,
-            description="Useful for when you need information about the current project. Can be used to answer questions about the project's codebase, documentation, and more. Use in the form of a question.",
+            func=context,
+            description="Useful for when you need information about the current project or files. Can be used to answer questions about file contents, project questions, and documentation or pdfs. Ask targeted questions.",
         ),
     ]
 
@@ -163,7 +162,7 @@ def ask_agent(agent, message):
     response = agent.run(message)
     # response = agent({"input": message})
 
-    print(response["intermediate_steps"])
+    # print(response["intermediate_steps"])
 
-    print(json.dumps(response["intermediate_steps"], indent=2))
+    # print(json.dumps(response["intermediate_steps"], indent=2))
     return response

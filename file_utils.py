@@ -61,7 +61,7 @@ def read_gitignore_and_exclude(
 
     for file_path in file_paths:
         if os.path.exists(file_path):
-            with open(file_path, "r") as ignore_file:
+            with open(file_path, "r", errors="replace") as ignore_file:
                 patterns = [
                     line.strip()
                     for line in ignore_file
@@ -121,8 +121,9 @@ class CustomUnstructuredFileLoader(UnstructuredFileLoader):
 
         try:
             elements = self._get_elements()
-        except ValueError:
+        except ValueError as e:
             _, file_extension = os.path.splitext(self.file_path)
+            print(f"Error while loading file: {self.file_path}. Error: {e}")
             print(f"Unsupported file type: {file_extension}. Adding to exclude.txt.")
             with open("exclude.txt", "a") as exclude_file:
                 exclude_file.write(f"{file_extension}\n")
@@ -132,6 +133,7 @@ class CustomUnstructuredFileLoader(UnstructuredFileLoader):
 
     def _get_elements(self) -> List:
         from langchain.docstore.document import Document
+        from langchain.document_loaders import PyPDFLoader
         from unstructured.partition.auto import partition
 
         # Define code file extensions that you want to support
@@ -205,6 +207,26 @@ class CustomUnstructuredFileLoader(UnstructuredFileLoader):
                 page_content=content, metadata={"source": self.file_path}
             )
             return [document]
+        if file_extension.lower() == ".pdf":
+            # Load PDF files using PyPDFLoader
+            loader = PyPDFLoader(self.file_path)
+            pages = loader.load()
+            return pages
         else:
             # Use partition for other file types
             return partition(filename=self.file_path, **self.unstructured_kwargs)
+
+
+class SafeRecursiveCharacterTextSplitter(RecursiveCharacterTextSplitter):
+    def split_documents(self, documents):
+        texts = []
+        for doc in documents:
+            try:
+                texts.append(doc.page_content)
+            except AttributeError:
+                print(
+                    "Warning: 'FigureCaption' object has no attribute 'page_content'. Skipping this document."
+                )
+                continue
+
+        return super().split_documents(texts)
