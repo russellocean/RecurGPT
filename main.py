@@ -1,7 +1,9 @@
+import globals
 from agent_utils import ask_agent, setup_agent
 from file_utils import (
     create_FAISS_vectorstore,
     load_documents_from_repository,
+    read_gitignore_and_exclude,
     select_ignore_file,
     select_project_repository,
 )
@@ -14,6 +16,10 @@ def main():
     print(f"Project repository selected: {project_repository}")
     ignore_file = select_ignore_file(initial_dir=project_repository)
     print(f"Ignore file selected: {ignore_file}")
+
+    globals.ignore_patterns = read_gitignore_and_exclude(
+        project_repository, ignore_file
+    )
 
     documents = load_documents_from_repository(project_repository, ignore_file)
     # preview_documents(documents) # Uncomment this line to preview the documentss
@@ -46,4 +52,5 @@ def main():
 
 
 if __name__ == "__main__":
+    globals.initialize()
     main()

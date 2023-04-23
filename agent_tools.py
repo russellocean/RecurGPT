@@ -3,6 +3,9 @@ import os
 # Import necessary libraries and modules
 from langchain.tools import BaseTool
 
+import globals
+from file_utils import is_ignored
+
 
 class ListDirectoriesTool(BaseTool):
     name = "ListDirectories"
@@ -57,6 +60,12 @@ class ListFilesAndDirectoriesTool(BaseTool):
             items = os.listdir(path)
             directories = [d for d in items if os.path.isdir(os.path.join(path, d))]
             files = [f for f in items if os.path.isfile(os.path.join(path, f))]
+
+            # Filter out files in the gitignore
+            files = [
+                f for f in files if not is_ignored(f, path, globals.ignore_patterns)
+            ]
+
             output_directories = "Directories: " + ", ".join(directories)
             output_files = "Files: " + ", ".join(files)
             output = output_directories + "\n" + output_files
