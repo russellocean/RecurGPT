@@ -60,10 +60,6 @@ def setup_agent(context, project_directory):
     search = GoogleSerperAPIWrapper()
     wolfram = WolframAlphaAPIWrapper()
 
-    # Need to figure out how to pass in the context
-    # vectorstore.merge_from(target=context)
-    # context.as_retriever() TODO figure out how to pass in the context
-
     # Initialize custom tools
     list_files_and_directories_tool = ListFilesAndDirectoriesTool()
     view_code_files_tool = ViewCodeFilesTool()
@@ -81,6 +77,11 @@ def setup_agent(context, project_directory):
             name="Wolfram",
             func=wolfram.run,
             description="Useful for answering questions about math, science, and geography.",
+        ),
+        Tool(
+            name="Context",
+            func=context.as_retriever,
+            description="Useful for answering questions about the current project, within the context of the files. Ask targeted questions.",
         ),
     ]
 
