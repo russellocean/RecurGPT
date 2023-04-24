@@ -6,9 +6,9 @@ from typing import List, Optional
 
 import nltk
 from langchain.document_loaders import DirectoryLoader, UnstructuredFileLoader
-from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.embeddings import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.vectorstores import Chroma
+from langchain.vectorstores import FAISS, Chroma
 
 nltk.download("averaged_perceptron_tagger")
 
@@ -17,6 +17,7 @@ def select_project_repository():
     root = tk.Tk()
     root.withdraw()  # Hide the main window to only show the file dialog
     folder_path = filedialog.askdirectory(title="Select the project repository")
+    # If nothing is selected it returns the project directory
     return folder_path
 
 
@@ -105,6 +106,19 @@ def chroma_vectorize(documents):
         content, embeddings, collection_name="project-repo"
     )
     return vector_store
+
+
+def create_FAISS_vectorstore(documents):
+    # Initialize embeddings and text splitter
+    embeddings = OpenAIEmbeddings()
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+
+    # Split your documents into chunks
+    content = text_splitter.split_documents(documents)
+
+    vectorstore = FAISS.from_documents(content, embeddings)
+
+    return vectorstore
 
 
 class CustomUnstructuredFileLoader(UnstructuredFileLoader):
